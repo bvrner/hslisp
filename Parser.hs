@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Parser (readStr) where
+module Parser (readStr, module Types) where
+
+import Types
 
 import Data.Void (Void)
 
@@ -12,22 +14,13 @@ import Text.Megaparsec.Error (errorBundlePretty)
 import Text.Megaparsec hiding (State)
 import qualified Text.Megaparsec.Char.Lexer as L
 
-data LispVal
-  = Symbol Text
-  | List [LispVal]
-  | Number Integer
-  | String Text
-  | True
-  | False
-  | Nil
-  deriving (Show)
-
 type Parser = Parsec Void Text
 
 readStr :: Text -> Either Text [LispVal]
-readStr t = case parse pLisp "f" t of
-  Right parsed -> Right parsed
-  Left err -> Left $ T.pack $ errorBundlePretty err
+readStr t =
+  case parse pLisp "f" t of
+    Right parsed -> Right parsed
+    Left err -> Left $ T.pack $ errorBundlePretty err
 
 sc :: Parser ()
 sc = L.space space1 (L.skipLineComment ";") empty
@@ -57,7 +50,7 @@ pSymbol :: Parser LispVal
 pSymbol = (Symbol . T.pack <$> lexeme (some (letterChar <|> lispSymbols)))
 
 pList :: Parser LispVal
-pList = List <$> between (symbol "(") (symbol ")") (some pLispVal)
+pList = List <$> between (symbol "(") (symbol ")") (many pLispVal)
 
 pLisp :: Parser [LispVal]
 pLisp = some pLispVal

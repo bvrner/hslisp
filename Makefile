@@ -1,8 +1,8 @@
 # not patient enough to setup a cabal os stack thing
-FILES = Main.hs Parser.hs
+FILES = Main.hs Parser.hs Eval.hs
 FLAGS = -Wall -Werror -Wextra -O2
 
-all:
+all: $(FILES)
 	ghc $(FILES) $(FLAGS)
 
 .PHONY: clear
