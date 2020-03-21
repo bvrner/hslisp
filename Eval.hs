@@ -15,14 +15,15 @@ import qualified Data.HashMap.Strict as HM
 type Eval a = ReaderT Env (ExceptT String Identity) a
 type Env = HashMap Text LispVal
 
-replEnv :: Env -- [(String, LispVal -> LispVal -> LispVal)]
+replEnv :: Env
 replEnv = HM.fromList [("+", Function "+" (LispFunc $ foldr1 (\(Number x) (Number y) -> Number (x + y)))),
-                       ("-", Function "-" (LispFunc $ foldr1 (\(Number a) (Number b) -> Number (a - b)))),
+                       ("-", Function "-" (LispFunc $ foldl1 (\(Number a) (Number b) -> Number (a - b)))),
                        ("*", Function "*" (LispFunc $ foldr1 (\(Number a) (Number b) -> Number (a * b)))),
-                       ("/", Function "/" (LispFunc $ foldr1 (\(Number a) (Number b) -> Number (a `div` b))))]
+                       ("/", Function "/" (LispFunc $ foldl1 (\(Number a) (Number b) -> Number (a `div` b))))]
 
 runEval :: Env -> Eval a -> Either String a
 runEval env ev = runIdentity (runExceptT (runReaderT ev env))
+{-# INLINABLE runEval #-}
 
 eval' :: LispVal -> Eval LispVal
 eval' (Symbol t) = do
